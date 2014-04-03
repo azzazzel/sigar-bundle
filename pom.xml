@@ -13,52 +13,135 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <!-- You will need to set org.osgi.framework.bootdelegation=sun.misc -->
+
     <build>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.4.0</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <instructions>
-                            <_include>bnd.bnd</_include>
-                        </instructions>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.17</version>
-                </plugin>
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.1.6</version>
-                    <executions>
-                        <execution>
-                            <id>scala-test-compile</id>
-                            <phase>process-test-resources</phase>
-                            <goals>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                     <excludes>org/hyperic/sigar/test/**</excludes>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.fusesource</groupId>
+                                    <artifactId>sigar</artifactId>
+                                    <version>${project.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.fusesource</groupId>
+                                    <artifactId>sigar</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>native</classifier>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <!-- <outputDirectory>$</outputDirectory> -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+
+                        <configuration>
+                            <target>
+                                <move overwrite="true"
+                                    file="${project.build.outputDirectory}/libsigar-amd64-linux-${project.version}.so"
+                                    tofile="${project.build.outputDirectory}/libsigar-amd64-linux.so" />
+                                <move overwrite="true"
+                                    file="${project.build.outputDirectory}/libsigar-x86-linux-${project.version}.so"
+                                    tofile="${project.build.outputDirectory}/libsigar-x86-linux.so" />
+                                <move overwrite="true"
+                                    file="${project.build.outputDirectory}/libsigar-amd64-solaris-${project.version}.so"
+                                    tofile="${project.build.outputDirectory}/libsigar-amd64-solaris.so" />
+                                <move overwrite="true"
+                                    file="${project.build.outputDirectory}/libsigar-universal64-macosx-${project.version}.dylib"
+                                    tofile="${project.build.outputDirectory}/libsigar-universal64-macosx.dylib" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                    <!-- embed all compile scope dependencies -->
+                    <instructions>
+<!--                         <_exportcontents>!org.hyperic.sigar.test,
+                            org.hyperic.*;-split-package:=merge-last</_exportcontents> -->
+                        <Import-Package>!sun.misc,
+                            !org.apache.tools.ant,
+                            !org.apache.tools.ant.*,
+                            !org.hyperic.sigar.test, !junit.*, *</Import-Package>
+                        <_removeheaders>Private-Package</_removeheaders>
+                        <Include-Resource>${project.build.outputDirectory}/libsigar-amd64-linux.so,
+                            ${project.build.outputDirectory}/libsigar-x86-linux.so,
+                            ${project.build.outputDirectory}/libsigar-amd64-solaris.so,
+                            ${project.build.outputDirectory}/libsigar-universal64-macosx.dylib</Include-Resource>
+
+                        <Bundle-NativeCode>
+                            /libsigar-amd64-linux.so;
+                            processor=x86_64; osname=Linux,
+                            /libsigar-x86-linux.so;
+                            processor=x86;
+                            osname=Linux,
+                            /libsigar-amd64-solaris.so;
+                            processor=x86_64; osname=Solaris,
+                            /libsigar-universal64-macosx.dylib;
+                            osname=macosx; processor=x86;
+                            processor=x86_64</Bundle-NativeCode>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+            </plugin>
+        </plugins>
     </build>
 
+    <dependencies>
+      <!--   <dependency>
+            <groupId>org.fusesource</groupId>
+            <artifactId>sigar</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fusesource</groupId>
+            <artifactId>sigar</artifactId>
+            <version>${project.version}</version>
+            <classifier>native</classifier>
+        </dependency> -->
+
+        <!-- You can use this version of log4j 1.2.* that is a valid bundle -->
+        <!-- <dependency> <groupId>log4j</groupId> <artifactId>log4j</artifactId> 
+            <version>1.2.17</version> </dependency> -->
+    </dependencies>
 </project>
