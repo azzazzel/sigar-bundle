@@ -29,7 +29,7 @@
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
-                     <excludes>org/hyperic/sigar/test/**</excludes>
+                            <excludes>org/hyperic/sigar/test/**</excludes>
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.fusesource</groupId>
@@ -91,10 +91,7 @@
                     <archive>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
-                    <!-- embed all compile scope dependencies -->
                     <instructions>
-<!--                         <_exportcontents>!org.hyperic.sigar.test,
-                            org.hyperic.*;-split-package:=merge-last</_exportcontents> -->
                         <Import-Package>!sun.misc,
                             !org.apache.tools.ant,
                             !org.apache.tools.ant.*,
@@ -128,20 +125,13 @@
     </build>
 
     <dependencies>
-      <!--   <dependency>
-            <groupId>org.fusesource</groupId>
-            <artifactId>sigar</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        <!-- You can use this version of log4j 1.2.* that is a valid bundle 
+            Used here to override Hyperic Sugar's POM dependency to get proper package 
+            versioning from BND -->
         <dependency>
-            <groupId>org.fusesource</groupId>
-            <artifactId>sigar</artifactId>
-            <version>${project.version}</version>
-            <classifier>native</classifier>
-        </dependency> -->
-
-        <!-- You can use this version of log4j 1.2.* that is a valid bundle -->
-        <!-- <dependency> <groupId>log4j</groupId> <artifactId>log4j</artifactId> 
-            <version>1.2.17</version> </dependency> -->
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
     </dependencies>
 </project>
