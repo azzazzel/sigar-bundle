@@ -92,11 +92,10 @@
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                     <instructions>
-                        <Import-Package>!sun.misc,
-                            !org.apache.tools.ant,
+                        <Import-Package>!org.apache.tools.ant,
                             !org.apache.tools.ant.*,
                             !org.hyperic.sigar.test, !junit.*, *</Import-Package>
-                        <_removeheaders>Private-Package</_removeheaders>
+                        <_removeheaders>Private-Package, Include-Resource</_removeheaders>
                         <Include-Resource>${project.build.outputDirectory}/libsigar-amd64-linux.so,
                             ${project.build.outputDirectory}/libsigar-x86-linux.so,
                             ${project.build.outputDirectory}/libsigar-amd64-solaris.so,
